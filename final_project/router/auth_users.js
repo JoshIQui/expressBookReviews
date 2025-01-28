@@ -44,8 +44,6 @@ regd_users.post("/login", (req, res) => {
         req.session.authorization = {
             accessToken, username
         }
-
-        console.log(req.session);
         return res.status(200).send("User successfully logged in");
     } else {
         return res.status(208).json({ message: "Invalid Login. Check username and password" });
@@ -56,7 +54,6 @@ regd_users.post("/login", (req, res) => {
 regd_users.put("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
     const username = req.user;
-    console.log(username);
     const review = req.body.review;
 
     if (books[isbn]) {
@@ -76,12 +73,16 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 
 regd_users.delete("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
-    const username = req.session.username;
-    const review = req.body.review;
+    const username = req.user;
 
     if (books[isbn]) {
-        delete books[isbn].reviews[username];
-        return res.status(200).json({ message: "Review deleted" });
+        if (books[isbn].reviews[username])
+        {
+            delete books[isbn].reviews[username];
+            return res.status(200).json({ message: "Review deleted" });
+        } else {
+            return res.status(404).json({ message: "Review not found" });
+        }
     } else {
         return res.status(404).json({ message: "Book not found" });
     }
